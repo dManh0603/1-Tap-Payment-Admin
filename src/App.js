@@ -17,8 +17,7 @@ import Activities from './pages/Activities';
 import Configuration from './pages/Configuration';
 import Zalopay from './pages/Zalopay';
 import _404 from './components/_404';
-const ENDPOINT = 'http://localhost:4000';
-
+const ENDPOINT = process.env.REACT_APP_API_SERVER;
 let socket, selectedChatCompare;
 socket = io(ENDPOINT);
 
@@ -75,7 +74,6 @@ function App() {
           <div id="content-wrapper" className='d-flex flex-column'>
             <Topbar />
             <Routes>
-              <Route path="/dashboard" Component={Dashboard}></Route>
               <Route path="/transactions" Component={Transactions}></Route>
               <Route path="/transaction/:id" Component={TransactionDetails}></Route>
               <Route path="/chats" Component={Chats}></Route>
@@ -84,6 +82,7 @@ function App() {
               <Route path="/activities" Component={Activities}></Route>
               <Route path="/config" Component={Configuration}></Route>
               <Route path="/zalopay" Component={Zalopay}></Route>
+              <Route path="/" Component={Dashboard}></Route>
 
               <Route path="*" Component={_404}></Route>
             </Routes>
@@ -93,7 +92,7 @@ function App() {
           <div id="content-wrapper" className='d-flex flex-column'>
             <Routes>
               <Route path="/" Component={Homepage}></Route>
-              
+
               <Route path="*" Component={_404}></Route>
             </Routes>
           </div>

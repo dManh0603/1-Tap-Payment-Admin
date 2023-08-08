@@ -1,10 +1,11 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom'
 import { formatAmount } from '../helpers/ViewHelper';
-import { Box, Spinner } from '@chakra-ui/react'
+import { Box, InputGroup, NumberDecrementStepper, NumberIncrementStepper, NumberInput, NumberInputField, NumberInputStepper, Spinner, InputLeftElement, Input } from '@chakra-ui/react'
+
+import { initAreaChart } from '../helpers/ChartArea';
+import { initPieChart } from '../helpers/ChartPie';
 
 const Dashboard = () => {
 
@@ -14,7 +15,60 @@ const Dashboard = () => {
   const [annualIncome, setAnnualIncome] = useState(0);
   const [transactionCount, setTransactionCount] = useState(0);
   const [succeedTransactionCount, setSucceedTransactionCount] = useState(0)
+  const currentYear = new Date().toISOString().slice(0, 4);
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const [selectedYear, setSelectedYear] = useState(parseInt(currentYear));
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth)
+
+  // Reference to the chart instance
+  const [areaChartInstance, setAreaChartInstance] = useState(null);
+  const [pieChartInstance, setPieChartInstance] = useState(null);
+
   const navigate = useNavigate();
+
+  function handleYearChange(value) {
+    setSelectedYear(value);
+  }
+
+  function handleMonthChange(e) {
+    setSelectedMonth(e.target.value);
+  }
+
+  useEffect(() => {
+    const initChart = async () => {
+      if (areaChartInstance) {
+        areaChartInstance.destroy();
+      }
+      if (!isLoading) {
+        try {
+          const areaChartInstance = await initAreaChart(selectedYear);
+          setAreaChartInstance(areaChartInstance);
+        } catch (error) {
+          console.error('Error initializing chart:', error);
+        }
+      }
+    };
+
+    initChart();
+  }, [isLoading, selectedYear]);
+
+  useEffect(() => {
+    const initChart = async () => {
+      if (pieChartInstance) {
+        pieChartInstance.destroy();
+      }
+      if (!isLoading) {
+        try {
+          const pieChartInstance = await initPieChart(selectedMonth);
+          setPieChartInstance(pieChartInstance);
+        } catch (error) {
+          console.error('Error initializing chart:', error);
+        }
+      }
+    };
+
+    initChart();
+  }, [isLoading, selectedMonth]);
 
   useEffect(() => {
     if (!storedToken) return navigate('/');
@@ -83,9 +137,7 @@ const Dashboard = () => {
                           <div className="text-xs font-weight-bold text-primary text-uppercase mb-1">
                             Earnings (Monthly)</div>
                           <div className="h5 mb-0 font-weight-bold text-gray-800">
-
                             {formatAmount(monthlyIncome)} VND
-
                           </div>
                         </div>
                         <div className="col-auto">
@@ -165,20 +217,25 @@ const Dashboard = () => {
                     {/* <!-- Card Header - Dropdown --> */}
                     <div className="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                       <h6 className="m-0 font-weight-bold text-primary">Earnings Overview</h6>
-                      <div className="dropdown no-arrow">
-                        <a className="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown"
-                          aria-haspopup="true" aria-expanded="false">
-                          <i className="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                        </a>
-                        <div className="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                          aria-labelledby="dropdownMenuLink">
-                          <div className="dropdown-header">Dropdown Header:</div>
-                          <a className="dropdown-item">Action</a>
-                          <a className="dropdown-item">Another action</a>
-                          <div className="dropdown-divider"></div>
-                          <a className="dropdown-item">Something else here</a>
-                        </div>
-                      </div>
+                      <Box>
+                        <InputGroup >
+                          <NumberInput
+                            step={1}
+                            defaultValue={selectedYear}
+                            min={2000}
+                            max={2100}
+                            onChange={handleYearChange}
+                            id='yearInput'
+                          >
+                            <NumberInputField />
+                            <NumberInputStepper>
+                              <NumberIncrementStepper />
+                              <NumberDecrementStepper />
+                            </NumberInputStepper>
+                          </NumberInput>
+                        </InputGroup>
+
+                      </Box>
                     </div>
                     {/* <!-- Card Body --> */}
                     <div className="card-body">
@@ -195,20 +252,9 @@ const Dashboard = () => {
                     {/* <!-- Card Header - Dropdown --> */}
                     <div className="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                       <h6 className="m-0 font-weight-bold text-primary">Monthly traffic overview</h6>
-                      <div className="dropdown no-arrow">
-                        <a className="dropdown-toggle" role="button" id="dropdownMenuLink" data-toggle="dropdown"
-                          aria-haspopup="true" aria-expanded="false">
-                          <i className="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                        </a>
-                        <div className="dropdown-menu dropdown-menu-right shadow animated--fade-in"
-                          aria-labelledby="dropdownMenuLink">
-                          <div className="dropdown-header">Dropdown Header:</div>
-                          <a className="dropdown-item">Action</a>
-                          <a className="dropdown-item">Another action</a>
-                          <div className="dropdown-divider"></div>
-                          <a className="dropdown-item">Something else here</a>
-                        </div>
-                      </div>
+                      <Box>
+                        <Input type='month' value={selectedMonth} onChange={handleMonthChange} />
+                      </Box>
                     </div>
                     {/* <!-- Card Body --> */}
                     <div className="card-body">
@@ -269,15 +315,12 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-
-          <Helmet>
-            <script src="/js/charts/chart-area.js"></script>
-            <script src="/js/charts/chart-pie.js"></script>
-          </Helmet>
         </>
       }
     </>
   )
+
+
 }
 
 export default Dashboard

@@ -1,6 +1,5 @@
-// Set new default font family and font color to mimic Bootstrap's default styling
-Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-Chart.defaults.global.defaultFontColor = '#858796';
+import Chart from 'chart.js'
+import axios from 'axios';
 
 function number_format(number, decimals, dec_point, thousands_sep) {
   // *     example: number_format(1234.56, 2, ',', ' ');
@@ -37,36 +36,35 @@ function get_labels() {
   return labels;
 }
 
-async function getData() {
-  const token = localStorage.getItem('userToken');
+async function getData(year = null) {
   try {
-    const response = await fetch('/api/transaction/fetchMonthly', {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-type': 'application/json'
-      }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      return data;
+    const storedToken = localStorage.getItem('userToken');
+    let endpoint = '';
+    if (year) {
+      endpoint = '/api/transaction/fetchMonthly/' + year;
     } else {
-      throw new Error('Request failed');
+      endpoint = '/api/transaction/fetchMonthly';
     }
+
+    const config = {
+      headers: {
+        Authorization: `Bearer ${storedToken}`,
+      },
+    };
+    const { data } = await axios.get(endpoint, config);
+    return data
+
   } catch (error) {
-    // Handle the error response
     console.error('Error:', error);
+    return 'Failed at getting data'
   }
 }
 
-async function initChart() {
-  const data = await getData();
+export async function initAreaChart(selectedYear) {
 
-  // Area Chart Example
+  const data = await getData(selectedYear);
   var ctx = document.getElementById("myAreaChart");
-
-  var myLineChart = new Chart(ctx, {
+  return new Chart(ctx, {
     type: 'line',
     data: {
       labels: get_labels(),
@@ -153,7 +151,6 @@ async function initChart() {
       }
     }
   });
-}
 
-initChart();
+}
 

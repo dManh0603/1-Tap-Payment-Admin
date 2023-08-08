@@ -1,24 +1,28 @@
-// Set new default font family and font color to mimic Bootstrap's default styling
-Chart.defaults.global.defaultFontFamily = 'Nunito', '-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif';
-Chart.defaults.global.defaultFontColor = '#858796';
+import Chart from 'chart.js'
+import axios from 'axios';
 
-async function getData() {
-  const token = localStorage.getItem('userToken');
+async function getData(date) {
   try {
-    const response = await fetch('/api/admin/activity/monthly', {
-      method: 'GET',
+    let endpoint = '/api/admin/activity/monthly';
+    if (date) {
+      endpoint += `/${date}`
+    }
+    const token = localStorage.getItem('userToken');
+    const response = await axios.get(endpoint, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-type': 'application/json'
       }
     });
 
-    if (response.ok) {
-      const data = await response.json();
+    if (response.status === 200) {
+      const data = response.data;
+      const { currentMonth, currentYear } = data
+
       // Extract just the count values from the response array
-      const counts = data.map(({ count }) => count);
-      const labels = data.map(({ type }) => type);
-      return { labels, counts };
+      const counts = data.activityCounts.map(({ count }) => count);
+      const labels = data.activityCounts.map(({ type }) => type);
+      return { labels, counts, currentMonth, currentYear };
     } else {
       throw new Error('Request failed');
     }
@@ -28,18 +32,14 @@ async function getData() {
   }
 }
 
-async function renderChart() {
-  var ctx = document.getElementById("myPieChart");
-
+export async function initPieChart(date = null) {
   try {
-    const data = await getData();
+    var ctx = document.getElementById("myPieChart");
+    const data = await getData(date);
 
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
     const totalCheckout = data.counts.reduce((sum, count) => sum += count, 0)
-    const formattedDate = `${currentYear} - ${currentMonth}: ${totalCheckout} checkouts`;
-    var myPieChart = new Chart(ctx, {
+    const formattedDate = `${data.currentYear} - ${data.currentMonth}: ${totalCheckout} checkouts`;
+    return new Chart(ctx, {
       type: 'doughnut',
       data: {
         labels: data.labels,
@@ -85,11 +85,10 @@ async function renderChart() {
         cutoutPercentage: 80,
       },
     });
-    console.log(myPieChart)
   } catch (error) {
     // Handle the error response
     console.error('Error:', error);
   }
+
 }
 
-renderChart();
