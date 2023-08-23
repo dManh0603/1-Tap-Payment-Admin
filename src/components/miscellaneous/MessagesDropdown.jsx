@@ -1,10 +1,10 @@
 import React from 'react'
 import { Menu, MenuButton, MenuItem, MenuList } from '@chakra-ui/react';
-import { UserState } from '../contexts/UserProvider'
-import { ChatState } from '../contexts/ChatProvider'
+import { UserState } from '../../contexts/UserProvider'
+import { ChatState } from '../../contexts/ChatProvider'
 import { Effect } from 'react-notification-badge'
 import NotificationBadge from 'react-notification-badge'
-import { getSender } from '../helpers/ChatHelper'
+import { getSender } from '../../helpers/ChatHelper'
 import { useNavigate } from 'react-router-dom';
 
 const MessagesDropdown = () => {

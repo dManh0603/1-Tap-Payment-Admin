@@ -1,9 +1,9 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
-import NotificationsDropdown from '../NotificationsDropdown'
-import MessagesDropdown from '../MessagesDropdown'
+import NotificationsDropdown from './miscellaneous/NotificationsDropdown'
+import MessagesDropdown from './miscellaneous/MessagesDropdown'
 import { useNavigate } from 'react-router-dom'
-import { UserState } from '../../contexts/UserProvider'
+import { UserState } from '../contexts/UserProvider'
 
 const Topbar = () => {
   const navigate = useNavigate();
